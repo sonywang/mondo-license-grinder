@@ -136,14 +136,14 @@ $perpetual_access=checkbox('perpetual_access',$perpetual_access);
 $perpetual_access_note=addslashes(htmlspecialchars($perpetual_access_note));
 
 function selectdate($which,$when){
-	list($yyyy,$mm,$dd)=explode('-',$when);
-	$s='<select id="date_'.$which.'" name="'.$which.'[0]">';
-	for($i=$yyyy-20;$i<=$yyyy;$i++){
-		$s.='<option value="'.$i.'"';
-		if($i==$yyyy) $s.=' selected="selected"';
-		$s.='>'.$i.'</option>';
-	}
-	$s.='</select>';
+    list($yyyy,$mm,$dd)=explode('-',$when);
+    $s='<select id="date_'.$which.'" name="'.$which.'[0]">';
+    for($i=min(date('Y')-30,$yyyy);$i<=date('Y');$i++){
+        $s.='<option value="'.$i.'"';
+        if($i==$yyyy) $s.=' selected="selected"';
+        $s.='>'.$i.'</option>';
+    }
+    $s.='</select>';
 	$s.='<select name="'.$which.'[1]">';
 	for($i=1;$i<13;$i++){
 		$mon=date('M',strtotime(sprintf("$yyyy-%02d-01",$i)));
