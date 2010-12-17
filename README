@@ -30,12 +30,19 @@ There isn't any interactive installation script. So:
 3) Copy header.inc.php-dist to header.inc.php and footer.inc.php-dist to 
    footer.inc.php. Make any modifications you like.
 
-4) Enable simple auth on the staff/ and admin/ directories. There is a sample
-   "htaccess-dist" supplied in each directory. 
+4) Enable HTTP Basic authentication on the staff/ and admin/ directories. There 
+   is a sample "htaccess-dist" supplied in each directory. Copy these to 
+   ".htaccess" in their respective directories
    
+4a) A htaccess-dist has been added to the site root as well since Google Code
+    doesn't seem to want to show it. Copy this to .htaccess in the same directory as well.
+    
 5) You may need to edit the .htaccess file in the site root and/or enable 
    mod_rewrite. Currently the site probably won't work without mod_rewrite.
 
-6) If all has gone well, visiting {BASE_URL} will show the public-facing app.
+6) If all has gone well, visiting {BASE_URL} (configured in config.php) will 
+   show the public-facing app.
 
-7) Go to {BASE_URL}/admin to begin entering your license data.
+7) Go to {BASE_URL}/admin to begin entering your license data. Or optionally
+   you can download our starter database from:
+   http://code.google.com/p/mondo-license-grinder/downloads/detail?name=licenses_copy.sql.bz2

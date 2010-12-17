@@ -11,7 +11,7 @@ define('JQUERY','http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js
 define('JQUERYUI','http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js');
 
 # Trailing slash is needed
-define('BASE_URL','http://your-server/');
+define('BASE_URL','http://example.ca/path/to/licence/app/');
 
 # These are default HTML blobs. "Blurb" is displayed on the front page if no tag is supplied.
 # They may be edited in the administration interface, or here if they haven't been edited there already.
