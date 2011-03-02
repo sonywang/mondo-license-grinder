@@ -70,6 +70,7 @@ if(!$data){
 		'perpetual_access'=>pv('perpetual_access',0),
 		'perpetual_access_note'=>pv('perpetual_access_note',''),
 		'notes'=>pv('notes',''),
+		'sherpa_romeo'=>pv('sherpa_romeo',''),
 		'notes_public'=>pv('notes_public',''),
 		'date_signed_approved'=>$dsa
 	);
@@ -81,6 +82,7 @@ extract($data);
 $title=htmlspecialchars($title);
 $tag=htmlspecialchars($tag);
 $notes=htmlspecialchars($notes);
+$sherpa_romeo=htmlspecialchars($sherpa_romeo);
 $notes_public=htmlspecialchars($notes_public);
 
 function select($which,$selected,&$db){
@@ -136,14 +138,14 @@ $perpetual_access=checkbox('perpetual_access',$perpetual_access);
 $perpetual_access_note=addslashes(htmlspecialchars($perpetual_access_note));
 
 function selectdate($which,$when){
-    list($yyyy,$mm,$dd)=explode('-',$when);
-    $s='<select id="date_'.$which.'" name="'.$which.'[0]">';
-    for($i=min(date('Y')-30,$yyyy);$i<=date('Y');$i++){
-        $s.='<option value="'.$i.'"';
-        if($i==$yyyy) $s.=' selected="selected"';
-        $s.='>'.$i.'</option>';
-    }
-    $s.='</select>';
+	list($yyyy,$mm,$dd)=explode('-',$when);
+	$s='<select id="date_'.$which.'" name="'.$which.'[0]">';
+	for($i=min(date('Y')-30,$yyyy);$i<=date('Y');$i++){
+		$s.='<option value="'.$i.'"';
+		if($i==$yyyy) $s.=' selected="selected"';
+		$s.='>'.$i.'</option>';
+	}
+	$s.='</select>';
 	$s.='<select name="'.$which.'[1]">';
 	for($i=1;$i<13;$i++){
 		$mon=date('M',strtotime(sprintf("$yyyy-%02d-01",$i)));
@@ -237,6 +239,10 @@ $addform
 			<br class="clearing" />
 			<label for="text_pa" class="desc">Note on Perpetual Access:</label>
 			<textarea name="perpetual_access_note" id="text_pa" class="field">$perpetual_access_note</textarea>
+		</fieldset>
+		<fieldset>
+			<label for="int_sr" class="desc">SHERPA/RoMEO URL</label>
+			<input type="text" id="int_sr" name="sherpa_romeo" class="fullwidth field" value="$sherpa_romeo" />
 		</fieldset>
 		<fieldset>
 			<label for="int_notes" class="desc">Internal Notes</label>

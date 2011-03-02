@@ -28,6 +28,7 @@ $ill_electronic=$ill_electronic?'Yes':'No';
 $ill_ariel=$ill_ariel?'Yes':'No';
 $walk_in=$walk_in?'Yes':'No';
 $alumni_access=$alumni_access?'Yes':'No';
+$sherpa_romeo=$sherpa_romeo?'<tr><th class="heading">SHERPA/RoMEO</th><td colspan="2"><a href="'.$sherpa_romeo.'" target="_blank">Link to publisher copyright policies</a></td></tr>':'';
 $perpetual_access=$perpetual_access?'Yes':'No';
 $perpetual_access_note=htmlspecialchars($perpetual_access_note);
 $password=$password?'Yes':'No';
@@ -152,6 +153,7 @@ echo <<<END
                     {$boilerplate['password_required']['long']}
                 </td>
 			</tr>
+		$sherpa_romeo 
 		$notes
 		$notes_public
 		</table>

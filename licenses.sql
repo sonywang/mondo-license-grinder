@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS `record` (
   `ill_ariel` tinyint(1) NOT NULL,
   `walk_in` tinyint(1) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `sherpa_romeo` varchar(255) NOT NULL,
   `perpetual_access` tinyint(1) NOT NULL DEFAULT '0',
   `perpetual_access_note` text NOT NULL,
   `notes` text NOT NULL,

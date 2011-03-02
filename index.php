@@ -35,6 +35,7 @@ $ill_print = $ill_print ? 'Yes' : 'No';
 $ill_electronic = $ill_electronic ? 'Yes' : 'No';
 $ill_ariel = $ill_ariel ? 'Yes' : 'No';
 $walk_in = $walk_in ? 'Yes' : 'No';
+$sherpa_romeo=$sherpa_romeo?'<tr><th class="heading">SHERPA/RoMEO</th><td colspan="2"><a href="'.$sherpa_romeo.'" target="_blank">Link to publisher copyright policies</a></td></tr>':'';
 if ($notes_public) {
     $notes_public = '<tr><th colspan="4" class="heading">Notes</th>
 </tr><tr><td colspan="4">' . nl2br(htmlspecialchars($notes_public)) . '</td></tr>';
@@ -110,6 +111,7 @@ echo <<<END
                     </div>
                 </td>
 			</tr>
+			$sherpa_romeo
 		</table>
 		<h5>For Libraries</h5>
 		<table class="license-table">
