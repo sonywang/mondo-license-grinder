@@ -14,7 +14,8 @@ $binaries=array(
 );
 include('../db.inc.php');
 foreach(array('vendor'=>'Vendor','consortium'=>'Consortium') as $table => $nice){
-	$$table=$db->GetAssoc($table);
+	$sql="SELECT `id`,`name` FROM `$table` ORDER BY `name`";
+	$$table=$db->GetAssoc($sql);
 }
 if($_POST){
 	$bsql=array();
@@ -39,48 +40,50 @@ if($_POST){
 	if(!$bsql) $bsql=1;
 	$sql="
 		SELECT 
-			`id`
+			`id`,
+			`title`,
+			`vendor`,
+			`consortium`,
+			`e_reserves`,
+			`course_pack`,
+	        `durable_url`,
+	        `alumni_access`,
+            `perpetual_access`,
+            `password`,
+            `ill_print`,
+            `ill_electronic`,
+            `ill_ariel`,
+            `walk_in`
 		FROM `record`
 		WHERE
 			$bsql
 		ORDER BY `title` ASC
 	";
-	$res=$db->query($sql);
-	$res=$res->fetchAll(PDO::FETCH_ASSOC);
+	$stmt=$db->prepare($sql);
+	$stmt->execute();
+	$res=$stmt->fetchAll(PDO::FETCH_ASSOC);
 	$sql="SELECT COUNT(*) FROM `record`";
-	$count=$db->getOneValue($sql);
+	$stmt=$db->prepare($sql);
+	$stmt->execute();
+	$count=$stmt->fetch(PDO::FETCH_NUM);
+	$count=$count[0];
 	if($res){
 		header('Content-type:text/csv');
 		header('Content-disposition:attachment,filename="licensedata.csv"');
+		foreach($res as $rn=>$row){
+			if($rn==0){
 ?>"Title","Vendor","Consortium","e-Reserves","Course Pack","Durable URL","Alumni Access","Perpetual Access","Password Required","ILL Print","ILL Electronic","ILLL Ariel","Walk In"
 <?php
-		foreach($res as $rn=>$row){
+			}
 			$id=$row['id'];
-			$data=$db->getLicenseData($id);
 			unset($row['id']);
 			$out=array();
-			foreach(
-				array(
-                    'title',
-                    'vendorName',
-                    'consortiumName',
-                    'e_reserves',
-                    'course_pack',
-                    'durable_url',
-                    'alumni_access',
-                    'perpetual_access',
-                    'password',
-                    'ill_print',
-                    'ill_electronic',
-                    'ill_ariel',
-                    'walk_in'
-               	) as $k){
-               	$v=$data[$k];
+			foreach($row as $k=>$v){
 				switch($k){
-					case 'vendorName':
+					case 'vendor':
 						$out[]=$vendor[$v];
 						break;
-					case 'consortiumName':
+					case 'consortium':
 						$out[]=$consortium[$v];
 						break;
 					case 'title':

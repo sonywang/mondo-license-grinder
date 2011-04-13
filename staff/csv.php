@@ -59,12 +59,14 @@ if($_POST){
 			$bsql
 		ORDER BY `title` ASC
 	";
-	$res=$db->GetArray($sql);
+	$stmt=$db->prepare($sql);
+	$stmt->execute();
+	$res=$stmt->fetchAll(PDO::FETCH_ASSOC);
 	$sql="SELECT COUNT(*) FROM `record`";
-	$count=$db->GetOne($sql);
-//	echo $sql;;
-//	echo $db->ErrorMsg();
-//	var_export($res);
+	$stmt=$db->prepare($sql);
+	$stmt->execute();
+	$count=$stmt->fetch(PDO::FETCH_NUM);
+	$count=$count[0];
 	if($res){
 		header('Content-type:text/csv');
 		header('Content-disposition:attachment,filename="licensedata.csv"');
