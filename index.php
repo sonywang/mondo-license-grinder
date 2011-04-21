@@ -96,7 +96,7 @@ echo <<<END
                         {$boilerplate['course_pack']['short']}
                         <span><a class="more-info">More info</a></span>
 					<div class="full-license-info">
-                        {$boilerplate['e_reserves']['long']}
+                        {$boilerplate['course_pack']['long']}
                     </div>
                 </td>
 			</tr>
