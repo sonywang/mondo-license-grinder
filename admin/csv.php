@@ -13,9 +13,10 @@ $binaries=array(
 	'walk_in'=>'Walk In'
 );
 include('../db.inc.php');
+$vendor=array();
+$consortium=array();
 foreach(array('vendor'=>'Vendor','consortium'=>'Consortium') as $table => $nice){
-	$sql="SELECT `id`,`name` FROM `$table` ORDER BY `name`";
-	$$table=$db->GetAssoc($sql);
+	$$table=$db->getAssoc($table);
 }
 if($_POST){
 	$bsql=array();
