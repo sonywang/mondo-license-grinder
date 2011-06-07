@@ -212,7 +212,7 @@ $addform
 				<label for="sel_consortium" class="fullwidth sub">Consortium</label>
 			</span>
 			<span style="float:left; width:100%">
-				<input type="text" class="fullwidth field" value="$password" />
+				<input type="text" name="password" class="fullwidth field" value="$password" />
 				<label for="text_pass" class="fullwidth sub">Password</label>
 			</span>
 		</fieldset>
