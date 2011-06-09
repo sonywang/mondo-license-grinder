@@ -6,7 +6,6 @@ $binaries=array(
 	'durable_url'=>'Durable URL',
 	'alumni_access'=>'Alumni Access',
 	'perpetual_access'=>'Perpetual Access',
-	'password'=>'Password Required',
 	'ill_print'=>'ILL Print',
 	'ill_electronic'=>'ILL Electronic',
 	'ill_ariel'=>'ILL Ariel',
@@ -36,6 +35,13 @@ if($_POST){
 	if($_POST['consortium']){
 		$bsql[]='`consortium`='.$_POST['consortium'];
 	}
+    if($_POST['password']=='1'){
+		$bsql[]='`password` != \'\'';
+    }
+    if($_POST['password']=='2'){
+    	$bsql[]='`password` = \'\' ';
+    }
+                                	
 	$bsql=implode(' AND ',$bsql);
 	
 	if(!$bsql) $bsql=1;
@@ -50,11 +56,11 @@ if($_POST){
 	        `durable_url`,
 	        `alumni_access`,
             `perpetual_access`,
-            `password`,
             `ill_print`,
             `ill_electronic`,
             `ill_ariel`,
-            `walk_in`
+            `walk_in`,
+            `password`
 		FROM `record`
 		WHERE
 			$bsql
@@ -73,7 +79,8 @@ if($_POST){
 		header('Content-disposition:attachment,filename="licensedata.csv"');
 		foreach($res as $rn=>$row){
 			if($rn==0){
-?>"Title","Vendor","Consortium","e-Reserves","Course Pack","Durable URL","Alumni Access","Perpetual Access","Password Required","ILL Print","ILL Electronic","ILLL Ariel","Walk In"
+?>
+"Title","Vendor","Consortium","e-Reserves","Course Pack","Durable URL","Alumni Access","Perpetual Access","ILL Print","ILL Electronic","ILLL Ariel","Walk In","Password"
 <?php
 			}
 			$id=$row['id'];
@@ -88,6 +95,7 @@ if($_POST){
 						$out[]=$consortium[$v];
 						break;
 					case 'title':
+					case 'password':
 						$out[]=$v;
 						break;
 					default:
@@ -102,7 +110,7 @@ if($_POST){
 			echo implode(',',$out)."\n";
 		}
 	}else{
-		echo '';
+		var_export($db->errorInfo());
 	}
 			
 }

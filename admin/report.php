@@ -5,11 +5,11 @@ $binaries=array(
 	'durable_url'=>'Durable URL',
 	'alumni_access'=>'Alumni Access',
 	'perpetual_access'=>'Perpetual Access',
-	'password'=>'Password Required',
 	'ill_print'=>'ILL Print',
 	'ill_electronic'=>'ILL Electronic',
 	'ill_ariel'=>'ILL Ariel',
-	'walk_in'=>'Walk In'
+	'walk_in'=>'Walk In',
+	'password'=>'Password'
 );
 require_once('../config.php');
 include('../db.inc.php');
@@ -43,7 +43,7 @@ foreach(array('1'=>'Yes','2'=>'No','3'=>'Don\'t Care') as $k=>$v){
 	echo '<tr><th><a class="set-radio" onclick="setAllRadios('.$k.');">'.$v.'</a></th>';
 	foreach($binaries as $name=>$pretty){
 		echo '<td class="c">';
-		if($_POST){
+		if($_POST && $_POST[$name]){
 			if($_POST[$name]==$k){
 				echo '<input type="radio" name="'.$name.'" value="'.$k.'" checked="checked" />';
 			}else{
@@ -90,6 +90,7 @@ foreach(array('vendor'=>'Vendor','consortium'=>'Consortium') as $table => $nice)
 <?php
 if($_POST){
 	$bsql=array();
+	unset($binaries['password']);
 	foreach($binaries as $k=>$v){
 		$pv=$_POST[$k];
 		if($pv==1){
@@ -106,15 +107,20 @@ if($_POST){
 	if($_POST['consortium']){
 		$bsql[]='`consortium`='.$_POST['consortium'];
 	}
-	$bsql=implode(' AND ',$bsql);
-	
+	if($_POST['password']=='1'){
+		$bsql[]='`password` != \'\'';
+	}
+	if($_POST['password']=='2'){
+		$bsql[]='`password` = \'\' ';
+	}
+	$bsql=implode(') AND (',$bsql);
 	if(!$bsql) $bsql=1;
 	$sql="
 		SELECT 
             `id`
 		FROM `record`
 		WHERE
-			$bsql
+			($bsql)
 		ORDER BY `title` ASC
 	";
 	$res=$db->query($sql);
@@ -134,11 +140,11 @@ if($_POST){
 <th class="heading">Durable URL</th>
 <th class="heading">Alumni Access</th>
 <th class="heading">Perpetual Access</th>
-<th class="heading">Password Required</th>
 <th class="heading">ILL Print</th>
 <th class="heading">ILL Electronic</th>
 <th class="heading">ILL Ariel</th>
 <th class="heading">Walk In</th>
+<th class="heading">Password</th>
 </tr>
 <?php
 		foreach($res as $row){
@@ -155,11 +161,11 @@ if($_POST){
 					'durable_url',
 					'alumni_access',
 					'perpetual_access',
-					'password',
 					'ill_print',
 					'ill_electronic',
 					'ill_ariel',
-					'walk_in'
+					'walk_in',
+					'password'
 				) as $k){
 				
 				$v=$data[$k];
@@ -168,6 +174,7 @@ if($_POST){
 				switch($k){
 					case 'vendorName':
 					case 'consortiumName':
+					case 'password':
 						echo $v;
 						break;
 					case 'title':
