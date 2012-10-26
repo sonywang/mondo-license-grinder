@@ -1,0 +1,11 @@
+2012-02-07
+	- Added changelog
+	- Schema changed to add "blackboard" and "research_private_study"
+	- Binaries (Yes/No) are now Ternaries (Yes/No/Ask)
+	- Short and Long blurbs are now Yes, No, Ask blurbs
+	- CSV output includes new fields, as well as notes	
+2012-09-24
+	- Add "images" and "handouts"
+	- Add "Not Applicable" to "binary" question type
+2012-11-26
+	- Many changes. Added document upload, "Ask" and "N/A". Removed staff reporting.

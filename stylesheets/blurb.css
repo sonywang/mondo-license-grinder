@@ -1,0 +1,28 @@
+#blurb table{
+	border-collapse:collapse;
+	margin-bottom:15px;
+}
+#blurb th{
+	text-align:center;
+	border: 3px solid #fff;
+	padding:5px;
+}
+#blurb td{
+	width:50%;
+}
+#blurb .allowed{
+	background-color:#33bb55;
+	color:#fff; 
+}
+
+#blurb .notallowed{
+	background-color:#ff3333;
+	color:#fff; 
+}
+
+#blurb td                          { border: 3px solid #fff; padding:5px; }
+#blurb tr>td                       { background:#dfd; -webkit-transition: background-color 0.3s linear; }
+#blurb tr>td:hover                 { background:#afa; }
+#blurb td+td                       { background:#fdd; -webkit-transition: background-color 0.3s linear; }
+#blurb td+td:hover                 { background:#faa; }
+#blurb a                           { text-decoration:underline; }
