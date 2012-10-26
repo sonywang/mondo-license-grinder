@@ -20,18 +20,8 @@ if(!$data){
 }
 extract($data);
 $title=htmlspecialchars($title);
-$e_reserves=$e_reserves?'Yes':'No';
-$course_pack=$course_pack?'Yes':'No';
-$durable_url=$durable_url?'Yes':'No';
-$ill_print=$ill_print?'Yes':'No';
-$ill_electronic=$ill_electronic?'Yes':'No';
-$ill_ariel=$ill_ariel?'Yes':'No';
-$walk_in=$walk_in?'Yes':'No';
-$alumni_access=$alumni_access?'Yes':'No';
 $sherpa_romeo=$sherpa_romeo?'<tr><th class="heading">SHERPA/RoMEO</th><td colspan="2"><a href="'.$sherpa_romeo.'" target="_blank">Link to publisher copyright policies</a></td></tr>':'';
-$perpetual_access=$perpetual_access?'Yes':'No';
 $perpetual_access_note=htmlspecialchars($perpetual_access_note);
-$password=$password?'Yes':'No';
 if($notes_public){
 	$notes_public='<tr><th colspan="4" class="heading">Public Notes</th>
 </tr><tr><td colspan="4">'.nl2br(htmlspecialchars($notes_public)).'</td></tr>';
@@ -50,22 +40,30 @@ if($consortium){
 }else{
 	$consortium='';
 }
+$licenseLink="<tr><th>License Document Link</th><td colspan=\"3\">$docLink</td></tr>";
 $fields=array(
     'e_reserves'=>'E-reserves',
-    'course_pack'=>'Course Pack',
+    'course_pack'=>'Print Course Packs',
     'durable_url'=>'Durable URL',
     'ill_print'=>'ILL Print',
     'ill_electronic'=>'ILL Electronic',
     'ill_ariel'=>'ILL Ariel',
     'walk_in'=>'Walk-In',
+    'research_private_study'=>'Research/Private Study',
+    'blackboard'=>'Learning Management Systems (e.g. WebCT/Vista/Blackboard)',
+    'fulltext'=>'Full Text',
     'alumni_access'=>'Alumni Access',
     'perpetual_access'=>'Perpetual Access',
-    'password_required'=>'Password'
+    'password_required'=>'Password',
+    'handouts'=>'Class Handouts',
+    'images'=>'Images'
 );
 $boilerplate=array();
 foreach($fields as $field=>$nice){
-    $boilerplate[$field]['short']=$db->getHTML($field.'-short');
-    $boilerplate[$field]['long']=$db->getHTML($field.'-long');
+    $boilerplate[$field]['Yes']=$db->getHTML($field.'-Yes');
+    $boilerplate[$field]['No']=$db->getHTML($field.'-No');
+    $boilerplate[$field]['Ask']=$db->getHTML($field.'-Ask');
+	$boilerplate[$field]['Not Applicable']='';
 }
 $moreinsert='<script type="text/javascript" src="/scripts/staff.js"></script>';
 include('../header.inc.php');
@@ -78,24 +76,66 @@ echo <<<END
 		<h5>For Library Users</h5>
 		<table class="license-table">
 			<tr>
-				<th class="case">e-Reserves</th>
-				<td class="usage $e_reserves">$e_reserves</td>
+				<th class="case">Research/Private Study</th>
+				<td class="usage $nyaresearch_private_study">$nyaresearch_private_study</td>
 				<td class="definition">
-                    {$boilerplate['e_reserves']['long']}
+                    {$boilerplate['research_private_study'][$nyaresearch_private_study]}
                 </td>
 			</tr>
 			<tr>
-				<th class="case">Course Pack</th>
-				<td class="usage $course_pack">$course_pack</td>
+				<th class="case">Class Handouts</th>
+				<td class="usage $nyahandouts">$nyahandouts</td>
 				<td class="definition">
-                    {$boilerplate['course_pack']['long']}
+                    {$boilerplate['handouts'][$nyahandouts]}
                 </td>
+			</tr>
+			<tr>
+				<th class="case">Print Course Packs</th>
+				<td class="usage $nyacourse_pack">$nyacourse_pack</td>
+				<td class="definition">
+                    {$boilerplate['course_pack'][$nyacourse_pack]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">Learning Management Systems (e.g. WebCT/Vista/Blackboard)</th>
+				<td class="usage $nyablackboard">$nyablackboard</td>
+				<td class="definition">
+                    {$boilerplate['blackboard'][$nyablackboard]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">e-Reserves</th>
+				<td class="usage $nyae_reserves">$nyae_reserves</td>
+				<td class="definition">
+                    {$boilerplate['e_reserves'][$nyae_reserves]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">Images</th>
+				<td class="usage $nyaimages">$nyaimages</td>
+				<td class="definition">
+                    {$boilerplate['images'][$nyaimages]}
+				</td>
 			</tr>
 			<tr>
 				<th class="case">Durable URL</th>
-				<td class="usage $durable_url">$durable_url</td>
+				<td class="usage $nyadurable_url">$nyadurable_url</td>
 				<td class="definition">
-                    {$boilerplate['durable_url']['long']}
+                    {$boilerplate['durable_url'][$nyadurable_url]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">Full Text</th>
+				<td class="usage $nyafulltext">$nyafulltext</td>
+				<td class="definition">
+                    {$boilerplate['fulltext'][$nyafulltext]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">Password Required</th>
+				<td class="usage $nyapassword_required">$nyapassword_required</td>
+				<td class="definition">
+                    {$boilerplate['password_required'][$nyapassword_required]}
                 </td>
 			</tr>
 		</table>
@@ -103,23 +143,23 @@ echo <<<END
 		<table class="license-table">
 			<tr>
 				<th class="case">ILL Print</th>
-				<td class="usage $ill_print">$ill_print</td>
+				<td class="usage $nyaill_print">$nyaill_print</td>
 				<td class="definition">
-                    {$boilerplate['ill_print']['long']}
+                    {$boilerplate['ill_print'][$nyaill_print]}
                 </td>
 			</tr>
 			<tr>
 				<th class="case">ILL Electronic</th>
-				<td class="usage $ill_electronic">$ill_electronic</td>
+				<td class="usage $nyaill_electronic">$nyaill_electronic</td>
 				<td class="definition">
-                    {$boilerplate['ill_electronic']['long']}
+                    {$boilerplate['ill_electronic'][$nyaill_electronic]}
                 </td>
 			</tr>
 			<tr>
 				<th class="case">ILL Ariel</th>
-				<td class="usage $ill_ariel">$ill_ariel</td>
+				<td class="usage $nyaill_ariel">$nyaill_ariel</td>
 				<td class="definition">
-                    {$boilerplate['ill_ariel']['long']}
+                    {$boilerplate['ill_ariel'][$nyaill_ariel]}
                 </td>
 			</tr>
 		</table>
@@ -127,31 +167,24 @@ echo <<<END
 		<table class="license-table">
 			<tr>
 				<th class="case">Walk-In</th>
-				<td class="usage $walk_in">$walk_in</td>
+				<td class="usage $nyawalk_in">$nyawalk_in</td>
 				<td class="definition">
-                    {$boilerplate['walk_in']['long']}
+                    {$boilerplate['walk_in'][$nyawalk_in]}
                 </td>
 			</tr>
 			<tr>
 				<th class="case">Alumni Access</th>
-				<td class="usage $alumni_access">$alumni_access</td>
+				<td class="usage $nyaalumni_access">$nyaalumni_access</td>
 				<td class="definition">
-                    {$boilerplate['alumni_access']['long']}
+                    {$boilerplate['alumni_access'][$nyaalumni_access]}
                 </td>
 			</tr>
 			<tr>
 				<th class="case">Perpetual Access</th>
-				<td class="usage $perpetual_access">$perpetual_access</td>
+				<td class="usage $nyaperpetual_access">$nyaperpetual_access</td>
 				<td class="definition">
                     $perpetual_access_note
 				</td>
-			</tr>
-			<tr>
-				<th class="case">Password Required</th>
-				<td class="usage $password">$password</td>
-				<td class="definition">
-                    {$boilerplate['password_required']['long']}
-                </td>
 			</tr>
 		$sherpa_romeo 
 		$notes
@@ -162,6 +195,7 @@ echo <<<END
 		<table>
 		$vendor
 		$consortium
+		$licenseLink
 		</table>
 	</div>
 </div>

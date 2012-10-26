@@ -1,9 +1,11 @@
 <?php 
+$admin='yup';
 require_once('../db.inc.php');
 if(isset($_POST['del'])){
 	if(isset($_POST['id'])){
 		$did=1*$_POST['id'];
 		$db->deleteRecord($did);
+		@unlink('../license-docs/'.$did);
 	}
 	header('Location: index.php');
 	exit();
@@ -35,7 +37,7 @@ include('../header.inc.php');?>
 <h1>Add/Edit a License</h1>
 <?php include('nav.inc.php'); ?>
 <br />Find license by package title: 
-<input name="find" id="find" type="text" />
+<input name="find" id="find" type="text" class="Teresa" />
 <?php
 include('../a-z.inc.php');
 if(!function_exists('pv')){
@@ -49,9 +51,9 @@ if(!function_exists('pv')){
 
 if(!$data){
 	$id=pv('id',-1);
-	$dsa=date('Y-m-d');
+	$date_signed_approved=date('Y-m-d');
 	if(pv('date_signed_approved')){
-		$dsa=implode('-',pv('date_signed_approved'));
+		$date_signed_approved=implode('-',pv('date_signed_approved'));
 	}
 	$data=array(
 		'title'=>pv('title',''),
@@ -66,18 +68,28 @@ if(!$data){
 		'ill_electronic'=>pv('ill_electronic',0),
 		'ill_ariel'=>pv('ill_ariel',0),
 		'walk_in'=>pv('walk_in',0),
+		'handouts'=>pv('handouts',0),
+		'images'=>pv('images',0),
+		'research_private_study'=>pv('research_private_study',1),
+		'blackboard'=>pv('blackboard',1),
+		'fulltext'=>pv('walk_in',1),
 		'password'=>pv('password',''),
 		'perpetual_access'=>pv('perpetual_access',0),
 		'perpetual_access_note'=>pv('perpetual_access_note',''),
 		'notes'=>pv('notes',''),
 		'sherpa_romeo'=>pv('sherpa_romeo',''),
 		'notes_public'=>pv('notes_public',''),
-		'date_signed_approved'=>$dsa
+		'date_signed_approved'=>$date_signed_approved,
+		'doc_alias'=>''
 	);
 }
 if(isset($msg)&&$msg){
 	echo '<div class="message">'.$msg.'</div>';
 }
+foreach($data as $i=>$v){
+	$data[$i]=stripslashes($v);
+}
+//var_export($data);
 extract($data);
 $title=htmlspecialchars($title);
 $tag=htmlspecialchars($tag);
@@ -111,11 +123,26 @@ $vendor=select('vendor',$vendor,$db);
 $consortium=select('consortium',$consortium,$db);
 
 function checkbox($which,$state){
-	$s='<input type="checkbox" class="checkbox" id="cb_'.$which.'" value="1" name="'.$which.'" ';
-	if($state){
+    $s='<input type="radio" id="cb_'.$which.'y" value="1" name="'.$which.'" ';
+	if($state==1){
 		$s.='checked="checked" ';
 	}
-	$s.='/>';
+	$s.='/> <label for="cb_'.$which.'y">Yes</label> ';
+    $s.='<input type="radio" id="cb_'.$which.'n" value="0" name="'.$which.'" ';
+	if($state==0){
+		$s.='checked="checked" ';
+	}
+	$s.='/> <label for="cb_'.$which.'n">No</label> ';
+    $s.='<input type="radio" id="cb_'.$which.'a" value="2" name="'.$which.'" ';
+	if($state==2){
+		$s.='checked="checked" ';
+	}
+	$s.='/> <label for="cb_'.$which.'a">Ask</label> ';
+    $s.='<input type="radio" id="cb_'.$which.'na" value="3" name="'.$which.'" ';
+	if($state==3){
+		$s.='checked="checked" ';
+	}
+	$s.='/> <label for="cb_'.$which.'na">N/A</label> ';
 	return $s;
 }
 
@@ -128,16 +155,28 @@ $ill_ariel=checkbox('ill_ariel',$ill_ariel);
 if($id==-1){
 	$walk_in=checkbox('walk_in',1);
 	$durable_url=checkbox('durable_url',1);
-	
+	$fulltext=checkbox('fulltext',1);
+	$research_private_study=checkbox('research_private_study',1);
+	$blackboard=checkbox('blackboard',1);
+	$handouts=checkbox('handouts',2);
+	$images=checkbox('images',2);
 }else{
 	$walk_in=checkbox('walk_in',$walk_in);
 	$durable_url=checkbox('durable_url',$durable_url);
+	$fulltext=checkbox('fulltext',$fulltext);
+	$research_private_study=checkbox('research_private_study',$research_private_study);
+	$blackboard=checkbox('blackboard',$blackboard);
+	$handouts=checkbox('handouts',$handouts);
+	$images=checkbox('images',$images);
 }
-$password=addslashes(htmlspecialchars($password));
+$password=htmlspecialchars($password);
 $perpetual_access=checkbox('perpetual_access',$perpetual_access);
-$perpetual_access_note=addslashes(htmlspecialchars($perpetual_access_note));
+$perpetual_access_note=htmlspecialchars($perpetual_access_note);
 
-function selectdate($which,$when){
+function selectdate($which,$when=null){
+	if(is_null($when)){
+		$when=date('Y-m-d');
+	}
 	list($yyyy,$mm,$dd)=explode('-',$when);
 	$s='<select id="date_'.$which.'" name="'.$which.'[0]">';
 	for($i=min(date('Y')-30,$yyyy);$i<=date('Y');$i++){
@@ -177,14 +216,29 @@ if($id==-1){
 	$stafflink='<a target="_blank" href="'.BASE_URL.$tag.'/staff">Staff View</a>';
 }
 $date_signed_approved=selectdate('date_signed_approved',$date_signed_approved);
-
+$licensedocs=$db->listLicenseDocs();
+$selectLicenseDoc='
+	<select name="doc_alias">
+	  <option value="">(None)</option>';
+foreach($licensedocs as $doc){
+	$selected='';
+	if($doc['alias']==$doc_alias) $selected=' selected="selected"';
+	$selectLicenseDoc.='
+	  <option value="'.$doc['alias'].'"'.$selected.'>'.$doc['filename'].'</option>
+	';
+}
+$selectLicenseDoc.='</select>';
+$licenseDocLink='(No license associated with this record)';
+if($doc_alias){
+	$licenseDocLink='<a href="/admin/getdoc.php?'.$doc_alias.'">'.BASE_URL.'admin/getdoc.php?'.$doc_alias.'</a>';
+}
 $del='';
 if($id>-1)$del='<input type="submit" name="del" value="Delete License" />';
 $baseurl=BASE_URL;
 echo <<<END
 $addform
 <hr />
-	<form id="add-license" action="update.php" method="post" $hide>
+	<form id="add-license" action="update.php" method="post" enctype="multipart/form-data" $hide>
 		<fieldset>
 		<input type="hidden" name="id" value="$id" />
 		<label for="tag" class="desc">License URL</label>
@@ -217,25 +271,23 @@ $addform
 			</span>
 		</fieldset>
 		<fieldset>
-			<label for="cb_e_reserves" class="desc">Permitted Use</label>
-			$e_reserves
-			<label for="cb_e_reserves" class="checkbox">e-Reserves</label>
-			$ill_print
-			<label for="cb_ill_print" class="checkbox">ILL Print</label>
-			$course_pack
-			<label for="cb_course_pack" class="checkbox">Course Pack</label>
-			$ill_electronic
-			<label for="cb_ill_electronic" class="checkbox">ILL Electronic</label>
-			$durable_url
-			<label for="cb_durable_url" class="checkbox">Durable URL</label>
-			$ill_ariel
-			<label for="cb_ill_ariel" class="checkbox">ILL Ariel</label>
-			$alumni_access
-			<label for="cb_alumni_access" class="checkbox">Alumni Access</label>
-			$walk_in
-			<label for="cb_walk_in" class="checkbox">Walk In</label>
-			$perpetual_access
-			<label for="cb_perpetual_access" class="checkbox">Perpetual Access</label>
+			<label class="desc">Permitted Use</label>
+			<table>
+			<tr><td>Research/Private Study: </td><td>$research_private_study</td></tr>
+			<tr><td>Class Handouts: </td><td>$handouts</td></tr>
+			<tr><td>Print Course Packs: </td><td>$course_pack</td></tr>
+			<tr><td>Learning Management Systems (e.g. WebCT/Vista/Blackboard): </td><td>$blackboard</td></tr>
+			<tr><td>e-Reserves: </td><td>$e_reserves</td></tr>
+			<tr><td>Durable URL: </td><td>$durable_url</td></tr>
+			<tr><td>Walk-In: </td><td>$walk_in</td></tr>
+			<tr><td>Alumni Access: </td><td>$alumni_access</td></tr>
+			<tr><td>ILL Print: </td><td>$ill_print</td></tr>
+			<tr><td>ILL Electronic: </td><td>$ill_electronic</td></tr>
+			<tr><td>ILL Ariel: </td><td>$ill_ariel</td></tr>
+			<tr><td>Full Text Available: </td><td>$fulltext</td></tr>
+			<tr><td>Images (in classroom materials): </td><td>$images</td></tr>
+			<tr><td>Perpetual Access: </td><td>$perpetual_access</td></tr>
+			</table>
 			<br class="clearing" />
 			<label for="text_pa" class="desc">Note on Perpetual Access:</label>
 			<textarea name="perpetual_access_note" id="text_pa" class="field">$perpetual_access_note</textarea>
@@ -252,6 +304,13 @@ $addform
 			<label for="ext_notes" class="desc">External Notes</label>
 			<textarea name="notes_public" id="ext_notes" class="field">$notes_public</textarea>
 		</fieldset>
+		<fieldset>
+		    <label for="licensedoc" class="desc">License Document</label>
+			<p>
+				$licenseDocLink<br />
+				$selectLicenseDoc
+			</p>
+		</fieldset>
 		<input type="submit" value="Submit" />
 		<input type="reset" value="Clear" onclick="return clearform();" />
 		$del
@@ -259,4 +318,7 @@ $addform
 </div>
 END;
 ?>
+<script>
+$('tr:odd').css('backgroundColor','#ddd');
+</script>
 <?php include('../footer.inc.php');

@@ -1,4 +1,5 @@
 <?php
+//exit();
 include('../db.inc.php');
 if(!$_POST){
 	header('Location: '.BASE_URL.'admin/');
@@ -26,6 +27,8 @@ if(isset($_POST['newconsortium']) && $consortiumname=trim($_POST['newconsortium'
 $title=trim(pv('title'));
 $tag=trim(pv('tag'));
 $e_reserves=pv('e_reserves',0);
+$handouts=pv('handouts',2);
+$images=pv('images',2);
 $course_pack=pv('course_pack',0);
 $durable_url=pv('durable_url',0);
 $alumni_access=pv('alumni_access',0);
@@ -33,11 +36,15 @@ $ill_print=pv('ill_print',0);
 $ill_electronic=pv('ill_electronic',0);
 $ill_ariel=pv('ill_ariel',0);
 $walk_in=pv('walk_in',0);
+$research_private_study=pv('research_private_study',0);
+$blackboard=pv('blackboard',0);
 $perpetual_access=pv('perpetual_access',0);
 $perpetual_access_note=pv('perpetual_access_note','');
+$sherpa_romeo=pv('sherpa_romeo','');
 $password=pv('password','');
 $notes=pv('notes','');
 $notes_public=pv('notes_public','');
+$doc_alias=pv('doc_alias','');
 $errormsg=array();
 if(!$title){
 	$errormsg[]="A title is required.";
@@ -45,13 +52,12 @@ if(!$title){
 if(!$tag){
 	$errormsg[]='Please supply a tag for this record.';
 }else{
-echo $tag;
 	if(!preg_match('/^[a-z][a-z0-9_]+$/i',$tag)){
 		$errormsg[]='Tags may only contain letters, numbers, and the underscore ("_") character';
 	}else if(file_exists('../'.$tag)){
 		$errormsg[]='The tag "'.$tag.'" is not available.';
 	}else{
-		if($tid=$db->tagExists($tag) && $tid!=$id){
+		if(($tid=$db->tagExists($tag)) && $tid!=$id){
 			$errormsg[]='The tag "'.$tag.'" is not available.';
 		}
 	}
@@ -86,20 +92,33 @@ $cols=compact(
 		'consortium',
 		'e_reserves',
 		'course_pack',
+		'handouts',
 		'durable_url',
 		'alumni_access',
+		'sherpa_romeo',
 		'ill_print',
 		'ill_electronic',
 		'ill_ariel',
 		'walk_in',
+		'research_private_study',
+		'blackboard',
 		'perpetual_access',
 		'perpetual_access_note',
+		'images',
 		'password',
 		'notes',
 		'notes_public',
-		'date_signed_approved'
+		'date_signed_approved',
+		'doc_alias'
 );
 $id=$db->updateRecord($id,$cols);
 $_GET['id']=$id;
+
+if($_FILES && $_FILES['licensedoc']){
+    //var_export($_FILES);
+	//die('file!');
+	$db->setLicenseDoc($id,$_FILES['licensedoc']);
+}
+
 if(!$msg)$msg='Accepted! <input type="button" value="Clear form" onclick="return clearform();" />';
 include('index.php');

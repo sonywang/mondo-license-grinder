@@ -7,7 +7,7 @@ include('../header.inc.php');
 <div class="optionalWrapper small fullpage">
 <h1>License Information - Staff View</h1>
 
-<p class="nav"><a href="report.php">Generate Report</a></p>
+<!--<p class="nav"><a href="report.php">Generate Report</a></p>-->
 	<?php include('../a-z.inc.php'); ?>
 	<form id="license-form">
 		<div>

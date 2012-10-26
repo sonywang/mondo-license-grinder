@@ -1,83 +1,17 @@
 <?php
-# COPY THIS FILE TO config.php THEN CHANGE VALUES TO SUIT
-
-define('ADODB','/usr/share/php/adodb/adodb.inc.php');
 define('DBTYPE','mysql');
 define('DBHOST','localhost');
 define('DBUSER','license_user');
-define('DBPASS','license_pass');
+define('DBPASS','secure_password');
 define('DBNAME','licenses');
 define('JQUERY','http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js');
 define('JQUERYUI','http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js');
+define('DOCSTORE','/path/to/licensedocs');
+// the "cryptkey" file should be 32 bytes of original random data,
+// e.g. head -c 32 /dev/urandom > cryptkey
+// This is used to encrypt license documents
+// NB. if you change the contents of this file, any previously stored docs will be unreadable
+define('DOCKEY',file_get_contents(/secure/location/cryptkey'));
+//trailing slash needed
+define('BASE_URL','http://licenses.your-library.ca/');
 
-# Trailing slash is needed
-define('BASE_URL','http://example.ca/path/to/licence/app/');
-
-# These are default HTML blobs. "Blurb" is displayed on the front page if no tag is supplied.
-# They may be edited in the administration interface, or here if they haven't been edited there already.
-# Remember to escape single quotes.
-$defaults=array(
-	'blurb'=>'
-		<h3>Use of Electronic Resources</h3>
-		<p>The University of British Columbia licenses many electronic resources including indexes, databases, e-journals, 
-		and e-books. Access to these resources is governed by contractual agreements (license agreements) with resource 
-		providers. The agreements stipulate that access to the resource is restricted to current students, faculty and 
-		staff of the University of British Columbia. Use of these resources may only be used for educational and research 
-		purposes only and not for commercial purposes.</p>
-		<h3>What can I do with electronic resources?</h3>
-		<p>Please remember that violations of our license terms by anyone can result in the loss of access to that 
-			resource for the entire university community. If you are unsure about what you can do with a particular 
-			resource, check the permitted uses for that resource in our license database. </p>
-			<table>
-			<thead>
-				<tr>
-					<th>Generally Allowed</th><th>Generally Not Allowed</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Use by "walk-in" users not affiliated with UBC</td>
-					<td>Remote use for those who are not students, faculty or staff of UBC (see "Connect from home" for 
-					more information on remote use)</td>
-				</tr>
-				<tr>
-					<td>Printing or downloading a copy of an article for yourself</td>
-					<td>Excessive printing or downloading (e.g. whole journal issues, whole books)</td>
-				</tr>
-				<tr>
-					<td>Using licensed material for research, instruction, and educational purposes</td>
-					<td>Commercial use, sellinjug or distributing licensed material</td>
-				</tr>
-				<tr>
-					<td>Sharing an article with a fellow member of the UBC community</td>
-					<td>Sharing material with others not affiliated with UBC</td>
-				</tr>
-				<tr>
-					<td>Posting persistent links to licensed material (see "How to create persistent links" for more 
-					information)</td>
-					<td>Posting copies of articles or book chapters on personal websites or in WebCT/Vista</td>
-				</tr>
-			</tbody>
-			</table>
-	',
-	'e_reserves-short'=>'E-reserves are electronic copies of articles stored on a secure network for use by students in connection with a specific class.',
-	'e_reserves-long'=>'The licensee and authorized users may incorporate parts of the licensed materials into electronic reserve collections, which are collections of electronic copies of materials made and stored on a secure network for use by students in connection with specific courses of instruction.',
-	'course_pack-short'=>'Course packs are compilations of articles for use by students in a class.',
-	'course_pack-long'=>'The licensee may incorporate parts of the licensed materials into course packs, which are compilations of materials assembled by an academic institution for use by its students in a class for the purposes of instruction.',
-	'durable_url-short'=>'Persistent electronic links to individual articles or ebooks.',
-	'durable_url-long'=>'The licensee and authorized users are permitted to create persistent electronic links to individual items within the licensed for permitted uses.',
-	'ill_print-short'=>'For further inquiries, contact <a href="http://www.library.ubc.ca/home/ill.html">UBC Library Interlibrary Loans</a>.',
-	'ill_print-long'=>'The licensee may supply a single print copy of an individual document within the licensed materials to a user of another library for the purposes of research or private study, and not for commercial use.',
-	'ill_electronic-short'=>'',
-	'ill_electronic-long'=>'The licensee may supply a single copy of an individual document within the licensed materials via secure electronic transmission to a user of another library for the purposes of research or private study, and not for commercial use.',
-	'ill_ariel-short'=>'',
-	'ill_ariel-long'=>'The licensee may supply a single copy of an individual document within the licensed materials via the Ariel interlibrary loan software to a user of another library for the purposes of research or private study, and not for commercial use.',
-	'walk_in-short'=>'',
-	'walk_in-long'=>'Individual members of the public who are physically present in the licensee\'s library may access and use the licensed materials under the Fair Dealings provisions of the Canadian Copyright Act. Use of the materials is restricted to non-commercial use.',
-	'alumni_access-short'=>'',
-	'alumni_access-long'=>'Alumni of the University of British Columbia are considered authorized users of this resource and may access and use the licensed materials.',
-	'perpetual_access-short'=>'',
-	'perpetual_access-long'=>'',
-	'password-short'=>'',
-	'password-long'=>''
-);

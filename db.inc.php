@@ -31,7 +31,7 @@ class LicensePDO extends PDO{
 	
 	public function tagExists($tagname){
 		$stmt=&$this->preparedStatement(
-			'getRecordIdByTag',
+			'tagExists',
 			"
 				SELECT
 					`id`
@@ -46,7 +46,7 @@ class LicensePDO extends PDO{
 			return false;
 		}
 		$row=$stmt->fetch(PDO::FETCH_ASSOC);
-		return $row['tag'];
+		return $row['id'];
 	}
 	
 	public function getTagById($id){
@@ -141,6 +141,27 @@ class LicensePDO extends PDO{
 			}else{
 				$data['consortiumName']='';
 			}
+			if($data['doc_alias']){
+				$data['docLink']=$this->getLicenseDocLink($data['doc_alias']);
+				$data['docName']=$this->getLicenseDocName($data['doc_alias']);
+			}else{
+				$data['docLink']='No license document';
+				$data['docName']='No license document';
+			}
+			$nya=array('No','Yes','Ask','Not Applicable');
+			foreach($data as $k=>$v){
+				if(preg_match('/^[0123]$/',$v)){
+					$v=(int)$v;
+					$data["nya$k"]=$nya[$v];
+				}
+			}
+		}
+		if(!empty($data['password'])){
+			$data['password_required']=1;
+			$data['nyapassword_required']='Yes';
+		}else{
+			$data['password_required']=0;
+			$data['nyapassword_required']='No';
 		}
 		return $data;
 	}
@@ -149,8 +170,8 @@ class LicensePDO extends PDO{
 		$bind=array();
 		$cols=array();
 		foreach($data as $k=>$v){
-			$bind[':'.$k]=$v;
-			$cols[]="`$k`=:$k";
+			$bind[$k]=$v;
+			$cols[]="`".stripslashes($k)."`=:$k";
 		}
 		if($id<=0){ // new, so insert
 			$sql="INSERT INTO `record` SET "
@@ -165,7 +186,7 @@ class LicensePDO extends PDO{
 			$sql="UPDATE `record` SET "
 				.implode(',',$cols)
 				.' WHERE `id`=:id';
-			$bind[':id']=$id;
+			$bind['id']=$id;
 			$stmt=$this->preparedStatement(
 				'updateRecord'.md5($sql),
 				$sql
@@ -176,17 +197,31 @@ class LicensePDO extends PDO{
 	}
 	
 	public function getHTML($key){
+		global $data;
+		global $defaults;
 		$stmt=$this->preparedStatement(
 			'getHTML',
 			"SELECT `content` FROM `html` WHERE `tag`=:key"
 		);
 		$stmt->execute(array(':key'=>$key));
 		if($stmt->rowCount()=='0'){
-			global $defaults;
-			return $defaults[$key];
+			if(isset($defaults[$key])){
+				return $defaults[$key];
+			}else{
+				return '<p>Missing HTML for key <em><a href="/admin/boilerplate.php#'.$key.'">'.$key.'</a></em>.</p>';
+			}
 		}
 		$row=$stmt->fetch(PDO::FETCH_ASSOC);
-		return $row['content'];
+		$content=$row['content'];
+		if(!empty($data['title'])){
+			//$data=$this->getLicenseData($_GET['tag']);
+			$content=preg_replace(
+				'/(mailto:.*?)"/',
+				'\1?subject='.rawurlencode("License terms of use inquiry regarding ".$data['title']).'"',
+				$content
+			);
+		}
+		return $content;
 	}
 	
 	public function setHTML($key, $html=false){
@@ -195,7 +230,7 @@ class LicensePDO extends PDO{
 			"DELETE FROM `html` WHERE `tag`=:key"
 		);
 		$stmt->execute(array(':key'=>$key));
-		if($html){
+		if($html!==false){
 			$stmt=$this->preparedStatement(
 				'setHTML',
 				"INSERT INTO `html` SET `content`=:html, `tag`=:key"
@@ -341,6 +376,160 @@ class LicensePDO extends PDO{
 		return true;
 	}
 	
+	public function getAliasOfLicenseDoc($filename){
+		$sql="SELECT `alias` FROM `doc` WHERE `filename`=:filename";
+		$stmt=$this->preparedStatement('gald',$sql);
+		$stmt->execute(array('filename'=>$filename));
+		$row=$stmt->fetch(PDO::FETCH_ASSOC);
+		$filename=$row['alias'];
+		if(!$filename){
+			return '';
+		}
+		return $row['alias'];
+	}
+	
+	public function getLicenseDocName($alias){
+		$sql="SELECT `filename` FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('gldl',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$row=$stmt->fetch(PDO::FETCH_ASSOC);
+		$filename=$row['filename'];
+		if(!$filename){
+			return 'No License document';
+		}
+		return htmlspecialchars($row['filename']);
+	}
+	
+	public function getLicenseDocLink($alias){
+		$sql="SELECT `filename` FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('gldl',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$row=$stmt->fetch(PDO::FETCH_ASSOC);
+		$filename=$row['filename'];
+		if(!$filename){
+			return 'No License document.';
+		}
+		return '<a target="_blank" href="/admin/getdoc.php?'.$alias.'">'.htmlspecialchars($row['filename']).'</a>';
+	}
+	
+	public function listLicenseDocs(){
+		$sql="
+			SELECT
+			`filename`,
+			`alias`,
+			COUNT(`id`) AS usedBy
+			FROM `doc` LEFT JOIN `record` ON `doc_alias`=`alias`
+			GROUP BY `alias`
+			ORDER BY `filename`
+		";
+		$stmt=$this->preparedStatement('lld',$sql);
+		$stmt->execute();
+		$res=$stmt->fetchAll(PDO::FETCH_ASSOC);
+		$sql="SELECT `tag`,`title` FROM `record` WHERE `doc_alias`=:alias";
+		$stmt=$this->preparedStatement('dub',$sql);
+		foreach($res as $k=>$row){
+			if($row['usedBy']){
+				$stmt->execute(array('alias'=>$row['alias']));
+				$u=$stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_COLUMN);
+				$res[$k]['usedBy']=$u;
+			}
+		}
+		return $res;
+	}
+
+	public function saveLicenseDoc($filedata){
+		if($filedata['error']) return;
+		$filename=$filedata['name'];
+        $hash=substr(hash('whirlpool',$filename,true),0,6);
+        $chars='bcdfghjkmnpqrstvxzBCDFGHJKLMNPQRSTVXZ23456789';
+        $alias='';
+        for($i=0;$i<6;$i++){
+          $alias.=$chars[ord($hash[$i])%strlen($chars)];
+       	}
+		$hash=md5($filename.DOCKEY);
+		$loc=DOCSTORE.'/'.$hash;
+		if(file_exists($loc)){
+			@unlink($loc);
+		};
+		$tmp=$loc.'.tmp';
+		move_uploaded_file($filedata['tmp_name'],$tmp);
+		$content=file_get_contents($tmp);
+		$iv_size=mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
+		$iv=mcrypt_create_iv($iv_size,MCRYPT_RAND);
+		file_put_contents(
+			$loc,
+			mcrypt_encrypt(MCRYPT_RIJNDAEL_256,DOCKEY,$content,MCRYPT_MODE_ECB,$iv)
+		);
+		@unlink($tmp);
+
+		$sql="DELETE FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('ddl',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$sql="INSERT INTO `doc` SET `filename`=:filename, `alias`=:alias, `mime`=:mime";
+		$stmt=$this->preparedStatement('cdl',$sql);
+		$stmt->execute(array('filename'=>$filename,'alias'=>$alias,'mime'=>$filedata['type']));
+		//var_export($stmt->errorInfo());
+		return;
+	}
+	
+	public function getLicenseDoc($alias){
+		$sql="SELECT `filename`,`mime` FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('gld',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$row=$stmt->fetch(PDO::FETCH_ASSOC);
+		if(!$row) exit('<h1>Error</h1><p>There is no document corresponding to the alias <q>'.htmlspecialchars($alias).'</q></p>');
+		$filename=$row['filename'];
+		$hash=md5($filename.DOCKEY);
+		$loc=DOCSTORE.'/'.$hash;
+		$encrypted=file_get_contents($loc);
+		$iv_size=mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
+		$iv=mcrypt_create_iv($iv_size,MCRYPT_RAND);
+		$decrypted=mcrypt_decrypt(MCRYPT_RIJNDAEL_256,DOCKEY,$encrypted,MCRYPT_MODE_ECB,$iv);
+		header('Content-type: '.$row['mime']);
+		header('Content-disposition: inline;filename="'.$row['filename'].'"');
+		echo $decrypted;
+		exit();
+	}
+
+    public function deleteLicenseDoc($alias){
+    	$sql="SELECT `tag`, `title` FROM `record` WHERE `doc_alias`=:alias";
+		$stmt=$this->preparedStatement('cl',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
+    	if(count($rows)>0){
+    		if(count($rows)==1){
+    			$s='';
+    		}else{
+    			$s='s';
+    		}
+    		$ret="This document is referenced by ".count($rows)." record$s, cannot delete.<br/>Document is referenced by:<ul>";
+    		foreach($rows as $row){
+    			$ret.='<li><a href="/admin/?tag='.$row['tag'].'">'.$row['title'].'</a></li>';
+    		}
+    		$ret.='</ul>';
+    		return $ret;
+    	}
+		$sql="SELECT `filename`,`mime` FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('gld',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		$row=$stmt->fetch(PDO::FETCH_ASSOC);
+		if(!$row) return;
+		$filename=$row['filename'];
+		$hash=md5($filename.DOCKEY);
+		$loc=DOCSTORE.'/'.$hash;
+		@unlink($loc);
+		$sql="DELETE FROM `doc` WHERE `alias`=:alias";
+		$stmt=$this->preparedStatement('dld',$sql);
+		$stmt->execute(array('alias'=>$alias));
+		return;
+    }
+    	
+	public function backupRecordTable(){
+		$backup=dirname(__FILE__).'/backups/record-'.date('Ymd-His').'.sql';
+		$cmd='/usr/bin/mysqldump -h '.DBHOST.' -u '.DBUSER.' --password='.DBPASS.' '.DBNAME.' record > '.$backup;
+		exec($cmd,$out);
+		return;
+	}
 }
 
 

@@ -1,14 +1,20 @@
 <?php
 include('../db.inc.php');
 $fields=array(
-	'e_reserves'=>'E-reserves',
+	'research_private_study'=>'Research/Private Study',
+	'handouts'=>'Course Handouts',
 	'course_pack'=>'Course Pack',
+	'blackboard'=>'Learning Management Systems',
+	'e_reserves'=>'E-reserves',
 	'durable_url'=>'Durable URL',
+	'walk_in'=>'Walk-In',
+	'alumni_access'=>'Alumni Access',
+	'ill_any'=>'ILL',
 	'ill_print'=>'ILL Print',
 	'ill_electronic'=>'ILL Electronic',
 	'ill_ariel'=>'ILL Ariel',
-	'walk_in'=>'Walk-In',
-	'alumni_access'=>'Alumni Access',
+	'fulltext'=>'Full Text',
+	'images'=>'Images (in classroom materials)',
 	'perpetual_access'=>'Perpetual Access',
 	'password_required'=>'Password'
 );
@@ -32,15 +38,27 @@ include('../header.inc.php');
 	<table>
 <?php
 foreach($fields as $field=>$fieldname){
-	$short=$db->getHTML($field.'-short');
-	$long=$db->getHTML($field.'-long');
+	$question=$db->getHTML($field.'-question');
+	$yes=$db->getHTML($field.'-Yes');
+	$no=$db->getHTML($field.'-No');
+	$ask=$db->getHTML($field.'-Ask');
+//	$na=$db->getHTML($field.'-NotApplicable');
 	echo '
 		<tr>
 			<th>'.$fieldname.'</th>
-			<td class="bp">Short Text:<br />
-				<textarea class="tinymce" name="html['.$field.'-short]">'.$short.'</textarea><br />
-				Long Text: <br />
-				<textarea class="tinymce" name="html['.$field.'-long]">'.$long.'</textarea>
+			<td class="bp">
+			    Question Text:
+				<a id="'.$field.'-question"></a><br />
+				<textarea class="tinymce" name="html['.$field.'-question]">'.$question.'</textarea><br />
+			    &ldquo;Yes&rdquo; Text:
+				<a id="'.$field.'-Yes"></a><br />
+				<textarea class="tinymce" name="html['.$field.'-Yes]">'.$yes.'</textarea><br />
+				&ldquo;No&rdquo; Text: 
+				<a id="'.$field.'-No"></a><br />
+				<textarea class="tinymce" name="html['.$field.'-No]">'.$no.'</textarea><br />
+				&ldquo;Ask&rdquo; Text: 
+				<a id="'.$field.'-Ask"></a><br />
+				<textarea class="tinymce" name="html['.$field.'-Ask]">'.$ask.'</textarea>
 			</td>
 		</tr>';
 }
@@ -52,8 +70,19 @@ foreach($fields as $field=>$fieldname){
 <form>
 <script type="text/javascript">
 $('.tinymce').tinymce({
-	script_url:'../scripts/tinymce/jscripts/tiny_mce/tiny_mce.js'
+	theme:'advanced',
+	script_url:'../scripts/tinymce/jscripts/tiny_mce/tiny_mce.js',
+	init_instance_callback:reposition
 });
 $('tr:odd').css('backgroundColor','#ddd');
+var c=0;
+function reposition(i){
+	if(!document.location.hash) return;
+	c++;
+	if(c==<?php echo 3*count($fields); ?>){
+		//$('.tinymce').show();
+		document.location=document.location;
+	}
+}
 </script>
 <?php include('../footer.inc.php')?>

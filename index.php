@@ -27,14 +27,13 @@ if (!$data) {
     exit();
 }
 extract($data);
+$ill_any=max($ill_print,$ill_ariel,$ill_electronic);
+$nyaill_any='No';
+if($ill_any==1)$nyaill_any='Yes';
+if($ill_any==2)$nyaill_any='Ask';
+if($ill_any==3)$nyaill_any='Not Applicable';
+
 $title = htmlspecialchars($title);
-$e_reserves = $e_reserves ? 'Yes' : 'No';
-$course_pack = $course_pack ? 'Yes' : 'No';
-$durable_url = $durable_url ? 'Yes' : 'No';
-$ill_print = $ill_print ? 'Yes' : 'No';
-$ill_electronic = $ill_electronic ? 'Yes' : 'No';
-$ill_ariel = $ill_ariel ? 'Yes' : 'No';
-$walk_in = $walk_in ? 'Yes' : 'No';
 $sherpa_romeo=$sherpa_romeo?'<tr><th class="heading">SHERPA/RoMEO</th><td colspan="2"><a href="'.$sherpa_romeo.'" target="_blank">Link to publisher copyright policies</a></td></tr>':'';
 if ($notes_public) {
     $notes_public = '<tr><th colspan="4" class="heading">Notes</th>
@@ -54,11 +53,13 @@ $moreinsert = '';
 $base_url = BASE_URL;
 $fields=array(
     'e_reserves'=>'E-reserves',
-    'course_pack'=>'Course Pack',
+    'course_pack'=>'Print Course Pack',
+    'handouts'=>'Class Handouts',
+    'images'=>'Images',
     'durable_url'=>'Durable URL',
-    'ill_print'=>'ILL Print'
-//    'ill_electronic'=>'ILL Electronic',
-//    'ill_ariel'=>'ILL Ariel',
+    'ill_any'=>'ILL',
+    'research_private_study'=>'Research/Private Study',
+    'blackboard'=>'Blackboard'
 //    'walk_in'=>'Walk-In',
 //    'alumni_access'=>'Alumni Access',
 //    'perpetual_access'=>'Perpetual Access',
@@ -66,8 +67,11 @@ $fields=array(
 );
 $boilerplate=array();
 foreach($fields as $field=>$nice){
-	$boilerplate[$field]['short']=$db->getHTML($field.'-short');
-	$boilerplate[$field]['long']=$db->getHTML($field.'-long');
+	$boilerplate[$field]['Yes']=$db->getHTML($field.'-Yes');
+	$boilerplate[$field]['No']=$db->getHTML($field.'-No');
+	$boilerplate[$field]['Ask']=$db->getHTML($field.'-Ask');
+	$boilerplate[$field]['Not Applicable']='';
+	$boilerplate[$field]['question']=$db->getHTML($field.'-question');
 }
 include('header.inc.php');
 echo <<<END
@@ -79,56 +83,95 @@ echo <<<END
 		<h5>For UBC Library users</h5>
 		<table class="license-table">
 			<tr>
-				<th class="case">Can I put it on e-reserve?</th>
-				<td class="usage $e_reserves">$e_reserves</td>
+				<th class="case">
+					{$boilerplate['research_private_study']['question']}
+				</th>
+				<td class="usage $nyaresearch_private_study">$nyaresearch_private_study</td>
 				<td class="definition">
-                        {$boilerplate['e_reserves']['short']}
-                        <span><a class="more-info">More info</a></span>
-					<div class="full-license-info">
-                        {$boilerplate['e_reserves']['long']}
-                    </div>
+                        {$boilerplate['research_private_study'][$nyaresearch_private_study]}
                 </td>
 			</tr>
 			<tr>
-				<th class="case">Can I put it in a course pack?</th>
-				<td class="usage $course_pack">$course_pack</td>
+				<th class="case">
+					{$boilerplate['handouts']['question']}
+				</th>
+				<td class="usage $nyahandouts">$nyahandouts</td>
 				<td class="definition">
-                        {$boilerplate['course_pack']['short']}
-                        <span><a class="more-info">More info</a></span>
-					<div class="full-license-info">
-                        {$boilerplate['course_pack']['long']}
-                    </div>
+                        {$boilerplate['handouts'][$nyahandouts]}
                 </td>
 			</tr>
 			<tr>
-				<th class="case">Can I link to it?</th>
-				<td class="usage $durable_url">$durable_url</td>
+				<th class="case">
+					{$boilerplate['course_pack']['question']}
+				</th>
+				<td class="usage $nyacourse_pack">$nyacourse_pack</td>
 				<td class="definition">
-                        {$boilerplate['durable_url']['short']}
-                        <span><a class="more-info">More info</a></span>
-					<div class="full-license-info">
-                        {$boilerplate['durable_url']['long']}
-                    </div>
+                        {$boilerplate['course_pack'][$nyacourse_pack]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">
+					{$boilerplate['blackboard']['question']}
+				</th>
+				<td class="usage $nyablackboard">$nyablackboard</td>
+				<td class="definition">
+                        {$boilerplate['blackboard'][$nyablackboard]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">
+					{$boilerplate['e_reserves']['question']}
+				</th>
+				<td class="usage $nyae_reserves">$nyae_reserves</td>
+				<td class="definition">
+                        {$boilerplate['e_reserves'][$nyae_reserves]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">
+					{$boilerplate['images']['question']}
+				</th>
+				<td class="usage $nyaimages">$nyaimages</td>
+				<td class="definition">
+                        {$boilerplate['images'][$nyaimages]}
+                </td>
+			</tr>
+			<tr>
+				<th class="case">
+					{$boilerplate['durable_url']['question']}
+				</th>
+				<td class="usage $nyadurable_url">$nyadurable_url</td>
+				<td class="definition">
+                        {$boilerplate['durable_url'][$nyadurable_url]}
                 </td>
 			</tr>
 			$sherpa_romeo
 		</table>
+		<div class="legal">
+END;
+echo $db->getHTML('legal');
+$sv='<p><a href="/staff/?id='.$data['id'].'">Staff View</a>';
+echo <<<END
+		</div>
 		<h5>For Libraries</h5>
 		<table class="license-table">
 			<tr>
-				<th class="case">Is ILL allowed?</th>
-				<td class="usage $ill_print">$ill_print</td>
+				<th class="case">
+					{$boilerplate['ill_any']['question']}
+				</th>
+				<td class="usage $nyaill_any">$nyaill_any</td>
 				<td class="definition">
-                        {$boilerplate['ill_print']['short']}
-                        <span><a class="more-info">More info</a></span>
-					<div class="full-license-info">
-                        {$boilerplate['ill_print']['long']}
-                    </div>
+                        {$boilerplate['ill_any'][$nyaill_any]}
                 </td>
 			</tr>
 		$notes_public
 		</table>
 	</div>
+	
+	<p>If your intended use is not covered here or you have additional questions about license permissions, please contact
+	<a href="mailto:lib-license@interchange.ubc.ca">lib-license@interchange.ubc.ca</a>.</p>
+	
+	$sv
 </div>
 END;
 include('footer.inc.php');

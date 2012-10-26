@@ -1,17 +1,20 @@
 <?php
 $binaries=array(
+	'research_private_study'=>'Research/Private Study',
+	'course_pack'=>'Print Course Packs',
+	'blackboard'=>'Learning Management Systems',
 	'e_reserves'=>'E-reserves',
-	'course_pack'=>'Course Pack',
 	'durable_url'=>'Durable URL',
-	'alumni_access'=>'Alumni Access',
-	'perpetual_access'=>'Perpetual Access',
+	'fulltext'=>'Full Text Available',
+	'password'=>'Password',
 	'ill_print'=>'ILL Print',
 	'ill_electronic'=>'ILL Electronic',
 	'ill_ariel'=>'ILL Ariel',
 	'walk_in'=>'Walk In',
-	'password'=>'Password'
+	'alumni_access'=>'Alumni Access',
+	'perpetual_access'=>'Perpetual Access'
 );
-require_once('../config.php');
+//require_once('../config.php');
 include('../db.inc.php');
 $moreinsert='<script type="text/javascript" src="'.BASE_URL.'scripts/staff.js"></script>';
 include('../header.inc.php');
@@ -39,7 +42,7 @@ foreach($binaries as $name=>$pretty){
 	echo '<th class="heading">'.$pretty.'</th>';
 }
 echo '</tr>';
-foreach(array('1'=>'Yes','2'=>'No','3'=>'Don\'t Care') as $k=>$v){
+foreach(array('1'=>'Yes','2'=>'No','3'=>'Ask','4'=>'Don\'t Care') as $k=>$v){
 	echo '<tr><th><a class="set-radio" onclick="setAllRadios('.$k.');">'.$v.'</a></th>';
 	foreach($binaries as $name=>$pretty){
 		echo '<td class="c">';
@@ -50,7 +53,7 @@ foreach(array('1'=>'Yes','2'=>'No','3'=>'Don\'t Care') as $k=>$v){
 				echo '<input type="radio" name="'.$name.'" value="'.$k.'" />';
 			}
 		}else{
-			if($k==3){
+			if($k==4){
 				echo '<input type="radio" name="'.$name.'" value="'.$k.'" checked="checked" />';
 			}else{
 				echo '<input type="radio" name="'.$name.'" value="'.$k.'" />';
@@ -97,6 +100,8 @@ if($_POST){
 			$bsql[]="`$k`=1";
 		}else if($pv==2){
 			$bsql[]="`$k`=0";
+		}else if($pv==3){
+			$bsql[]="`$k`=2";
 		}else{
 			//eh
 		}
@@ -124,27 +129,32 @@ if($_POST){
 		ORDER BY `title` ASC
 	";
 	$res=$db->query($sql);
+//var_export($db->errorInfo());
 	$res=$res->fetchAll(PDO::FETCH_ASSOC);
 	$sql="SELECT COUNT(*) FROM `record`";
 	$count=$db->getOneValue($sql);
 	if($res){
 		echo '<p>'.number_format(count($res)).' of '.$count.' results ('.(round(count($res)*10000/$count)/100).'%)</p>';
+		echo '<div style="max-height:768px;overflow:auto">';
 		echo '<table class="report-table">';
 ?>
 <tr>
 <th class="heading">Title</th>
 <th class="heading">Vendor</th>
 <th class="heading">Consortium</th>
+<th class="heading">Research/Private Study</th>
+<th class="heading">Print Course Packs</th>
+<th class="heading">LMS</th>
 <th class="heading">e-Reserves</th>
-<th class="heading">Course Pack</th>
 <th class="heading">Durable URL</th>
-<th class="heading">Alumni Access</th>
-<th class="heading">Perpetual Access</th>
+<th class="heading">Full Text</th>
+<th class="heading">Password</th>
 <th class="heading">ILL Print</th>
 <th class="heading">ILL Electronic</th>
 <th class="heading">ILL Ariel</th>
 <th class="heading">Walk In</th>
-<th class="heading">Password</th>
+<th class="heading">Alumni Access</th>
+<th class="heading">Perpetual Access</th>
 </tr>
 <?php
 		foreach($res as $row){
@@ -156,16 +166,19 @@ if($_POST){
 					'title',
 					'vendorName',
 					'consortiumName',
-					'e_reserves',
+					'research_private_study',
 					'course_pack',
+					'blackboard',
+					'e_reserves',
 					'durable_url',
-					'alumni_access',
-					'perpetual_access',
+					'fulltext',
+					'password',
 					'ill_print',
 					'ill_electronic',
 					'ill_ariel',
 					'walk_in',
-					'password'
+					'alumni_access',
+					'perpetual_access'
 				) as $k){
 				
 				$v=$data[$k];
@@ -181,15 +194,16 @@ if($_POST){
 						echo '<a href="index.php?id='.$id.'">'.htmlspecialchars($v).'</a>';
 						break;
 					default:
-						if($v) echo 'Yes';
-						else echo 'No';
+						if($v==2){ echo 'Ask';}
+						else if($v==1) {echo 'Yes';}
+						else{ echo 'No';}
 						
 				}
 				echo '</td>';
 			}
 			echo '</tr>';
 		}
-		echo '</table>';
+		echo '</table></div>';
 	}else{
 		echo '<p>No results.</p>';
 	}
@@ -197,4 +211,7 @@ if($_POST){
 }
 ?>
 </div>
+<script>
+$('tr:odd').css('backgroundColor','#ddd');
+</script>
 <?php include('../footer.inc.php')?>
