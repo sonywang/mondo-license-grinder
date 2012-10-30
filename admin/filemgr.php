@@ -31,7 +31,7 @@ $docs=$db->listLicenseDocs();
 //var_dump($docs);
 
 echo'
-    <form action="/admin/filemgr.php" enctype="multipart/form-data" method="post">';
+    <form action="'.BASE_URL.'admin/filemgr.php" enctype="multipart/form-data" method="post">';
 if($docs){
 	echo '
 	  <table id="filemgr">
